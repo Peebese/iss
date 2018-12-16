@@ -1,10 +1,9 @@
 <?php
 
-
 use DI\Container;
 use GuzzleHttp\Client;
-use PhilipBrown\Avanti\ApiClient\ApiClientService;
-use PhilipBrown\Avanti\config\config;
+use App\Console\Commands\src\ApiClient\ApiClientService;
+use App\Console\Commands\src\Application\Config;
 
 return [
     'api-client-service' => function (Container $container) {

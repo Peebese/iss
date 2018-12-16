@@ -3,8 +3,9 @@
 
 namespace App\Console\Commands;
 
-use PhilipBrown\Avanti\ApiClient\ApiClientService;
+use App\Console\Commands\src\Application\ContainerBuilder;
 use Illuminate\Console\Command;
+use GuzzleHttp\Client;
 
 class ISS extends Command
 {
@@ -20,9 +21,14 @@ class ISS extends Command
      */
     public function handle()
     {
-        $apiClient = new ApiClientService();
-        $data = $apiClient->retrieveData();
-        $this->info($data);
+        $container = (new ContainerBuilder())->buildContainer();
+        $apiClient = $container->get('api-client-service');
+        $data = $apiClient->getSatellitePosition();
+        $distance = $apiClient->getSatelliteDistance('28.978917744091', '128.71059302811');
+
+        echo print_r($data, true);
+        echo print_r($distance, true);
+        //$this->info($data);
     }
 
 
