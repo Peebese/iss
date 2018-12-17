@@ -2,20 +2,29 @@
 
 namespace Tests\Feature;
 
+use App\Console\Commands\src\Application\ContainerBuilder;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ISSLocationTest extends TestCase
 {
-    /**
-     * A basic test example.
-     *
-     * @return void
-     */
-    public function testExample()
+    private $dummyHttpClient;
+    private $apiClientService;
+
+    public function setUp()
     {
-        $this->assertTrue(true);
+        $container = (new ContainerBuilder())->buildContainer();
+
+        $this->dummyHttpClient = new DummyApiClient();
+        $container->set('http-client', $this->dummyHttpClient);
+
+        $this->apiClientService = $container->get('api-client-service');
+    }
+
+    public function testSalelliteIdValidation()
+    {
+
     }
 
     /**

@@ -1,40 +1,48 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: philipbrown
- * Date: 13/12/2018
- * Time: 22:56
- */
+
 namespace App\Console\Commands\src\ApiClient;
 
-use GuzzleHttp\Exception\GuzzleException;
+use App\Console\Commands\src\Calculate\CalculateDistanceService;
+use App\Console\Commands\src\Response\DataResponse;
 use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use App\Console\Commands\src\Application\Config;
 
 class ApiClientService {
 
+    /**
+     * @var ClientInterface
+     */
     private $httpClient;
+
+    /**
+     * @var Config
+     */
     private $config;
+
+    /**
+     * @var CalculateDistanceService
+     */
+    private $calculate;
 
     public function __construct(
         ClientInterface $client,
-        Config $config
+        Config $config,
+        CalculateDistanceService $calculateService
     )
     {
        $this->httpClient    = $client;
        $this->config        = $config;
+       $this->calculate     = $calculateService;
     }
 
-    private function retrieveData(string $query = '')
+    private function retrieveData(string $query = '') : string
     {
         $request = new Request(
             'GET',
             $this->config->getApiDomain().'/satellites/'.$query,
             [
-                'Content-Type' => 'application/json',
-                'x-torpedoes' => '2',
+                'Content-Type' => 'application/json'
             ]
         );
 
@@ -44,77 +52,21 @@ class ApiClientService {
         return $response->getBody()->getContents();
     }
 
-    private function getSatilliteId() : array
+    private function getSatellites() : string
     {
-        return json_decode($this->retrieveData());
+        return $this->retrieveData();
     }
 
-    private function getSatelliteData() : array
+    public function getSatelliteData() : array
     {
-        $satelliteData = $this->getSatilliteId();
+        $satelliteData = $this->getSatellites();
 
         $combineSatelliteData = function($satellite) {
-            return json_decode($this->retrieveData($satellite->id));
+
+            DataResponse::validateId($satellite);
+            return DataResponse::fromJsonString($this->retrieveData($satellite->id));
         };
 
-        return array_map($combineSatelliteData,$satelliteData);
-    }
-
-    public function getSatellitePosition() : array
-    {
-        $satelliteData = $this->getSatelliteData();
-        $satelliteLatLong = function($satellite) {
-
-          return [
-              'latitude' => $satellite->latitude,
-              'longitude' => $satellite->longitude
-              ];
-        };
-        return array_map($satelliteLatLong, $satelliteData);
-    }
-
-    public function getSatelliteDistance(string $lat, string $long)
-    {
-        $satellitePostion = $this->getSatellitePosition();
-
-        $satelliteDistance = [];
-
-        foreach ($satellitePostion as $satellite) {
-            $satelliteDistance[] = $this->distance($satellite['latitude'], $satellite['longitude'],$lat,$long, 'K');
-        }
-
-        return $satelliteDistance;
-
-//       return array_map(function($satellite, $lat, $long){
-//            return $this->distance($satellite->latitude, $satellite->longitude,$lat,$long, 'K');
-//        },$satellitePostion);
-
-    }
-
-    public function distance($lat1, $lon1, $lat2, $lon2, $unit) {
-
-        if (($lat1 == $lat2) && ($lon1 == $lon2)) {
-            return 0;
-        }
-        else {
-            $theta = $lon1 - $lon2;
-            $dist = sin(deg2rad($lat1))
-                * sin(deg2rad($lat2)) +
-                cos(deg2rad($lat1)) *
-                cos(deg2rad($lat2)) *
-                cos(deg2rad($theta));
-            $dist = acos($dist);
-            $dist = rad2deg($dist);
-            $miles = $dist * 60 * 1.1515;
-            $unit = strtoupper($unit);
-
-            if ($unit == "K") {
-                return ($miles * 1.609344);
-            } else if ($unit == "N") {
-                return ($miles * 0.8684);
-            } else {
-                return $miles;
-            }
-        }
+        return array_map($combineSatelliteData, DataResponse::fromJsonString($satelliteData));
     }
 }

@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 
 use App\Console\Commands\src\Application\ContainerBuilder;
 use Illuminate\Console\Command;
-use GuzzleHttp\Client;
 
 class ISS extends Command
 {
@@ -23,13 +22,12 @@ class ISS extends Command
     {
         $container = (new ContainerBuilder())->buildContainer();
         $apiClient = $container->get('api-client-service');
-        $data = $apiClient->getSatellitePosition();
-        $distance = $apiClient->getSatelliteDistance('28.978917744091', '128.71059302811');
+        $response = $container->get('data-response-service');
+        $data = $apiClient->getSatelliteData();
 
-        echo print_r($data, true);
-        echo print_r($distance, true);
-        //$this->info($data);
+        $distance = $response->getSatelliteDistance('28.978917744091', '128.71059302811');
+
+        $this->info(print_r($response->getSatellitePosition($data), true));
+        $this->info(print_r($distance, true));
     }
-
-
 }
