@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands\src\Calculate;
 
-
 class CalculateDistanceService
 {
     public static function distance($lat1, $lon1, $lat2, $lon2) : float

@@ -1,18 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: PhilipB
- * Date: 2018-12-16
- * Time: 20:41
- */
 
 namespace App\Console\Commands\src\Response;
-
 
 use App\Console\Commands\src\ApiClient\ApiClientService;
 use App\Console\Commands\src\Calculate\CalculateDistanceService;
 
-class DataResponse
+class DataResponse implements DataResponseInterface
 {
     /**
      * @var ApiClientService
@@ -27,12 +20,14 @@ class DataResponse
     /**
      * Validates data has id
      *
-     * @param \stdClass $inputData
+     * @param string $inputData
      * @throws InvalidMessageException
      */
-    public static function validateId(\stdClass $inputData)
+    public static function validate(string $inputData)
     {
-        if ( !isset($inputData->id)) {
+        $jsonDataArr = self::fromJsonString($inputData);
+
+        if ( !isset($jsonDataArr->id) || !isset($jsonDataArr->name)) {
             throw InvalidMessageException::fromResponseBody($inputData);
         }
     }
@@ -46,35 +41,53 @@ class DataResponse
         return json_decode($json);
     }
 
-    public static function getSatellitePosition(array $satData) : array
+    public static function getSatellitePosition(string $satData) : string
     {
-        $satelliteLatLong = function($satellite) {
+        self::validate($satData);
 
-            return [
-                'id'        => $satellite->id,
-                'name'      => $satellite->name,
-                'latitude'  => $satellite->latitude,
-                'longitude' => $satellite->longitude
-            ];
-        };
+        $satDataArr = self::fromJsonString($satData);
 
-        return array_map($satelliteLatLong, $satData);
+        $positionDataArr = [
+            'id'        => $satDataArr->id,
+            'name'      => $satDataArr->name,
+            'latitude'  => $satDataArr->latitude,
+            'longitude' => $satDataArr->longitude
+        ];
+
+        return json_encode($positionDataArr);
     }
 
-    public function getSatelliteDistance(string $lat, string $long) : array
+    public static function retrieveFirstSatelliteId(Array $satArr) : int
     {
-        $satellitePostion = $this->satelliteData->getSatelliteData();
-        $satelliteDistance = [];
-
-        foreach ($satellitePostion as $satellite) {
-
-            $satelliteDistance[] = CalculateDistanceService::distance(
-                $satellite->latitude,
-                $satellite->longitude,
-                $lat,
-                $long);
+        $id = 0;
+        foreach ($satArr as $satellite) {
+            $id =  $satellite->id;
+            break;
         }
 
-        return $satelliteDistance;
+        return $id;
+    }
+
+    public function getDistFromFirstSat(string $lat, string $long) : string
+    {
+        $firstSatData = $this->satelliteData->getFirstSatelliteData();
+        $firstSatPosition = self::getSatellitePosition($firstSatData);
+        $satLat = json_decode($firstSatPosition,true)['latitude'];
+        $satLong = json_decode($firstSatPosition,true)['longitude'];
+
+        return CalculateDistanceService::distance(
+            $satLat,
+            $satLong,
+            $lat,
+            $long);
+    }
+
+    public static function prepareDistanceResponse($distanceVal)
+    {
+        $responseArr = [
+            'units' => 'km',
+            'distance' => $distanceVal
+        ];
+        return json_encode($responseArr);
     }
 }

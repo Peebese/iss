@@ -36,11 +36,11 @@ class ApiClientService {
        $this->calculate     = $calculateService;
     }
 
-    private function retrieveData(string $query = '') : string
+    private function retrieveSatellitesData() : string
     {
         $request = new Request(
             'GET',
-            $this->config->getApiDomain().'/satellites/'.$query,
+            $this->config->getApiDomain().'/satellites/',
             [
                 'Content-Type' => 'application/json'
             ]
@@ -52,21 +52,27 @@ class ApiClientService {
         return $response->getBody()->getContents();
     }
 
-    private function getSatellites() : string
+    private function retrieveSatelliteDataById(int $id) : string
     {
-        return $this->retrieveData();
+        $request = new Request(
+            'GET',
+            $this->config->getApiDomain().'/satellites/'.$id,
+            [
+                'Content-Type' => 'application/json'
+            ]
+        );
+
+        $response = $this->httpClient->send($request);
+        $response->getBody()->rewind();
+
+        return $response->getBody()->getContents();
     }
 
-    public function getSatelliteData() : array
+    public function getFirstSatelliteData() : string
     {
-        $satelliteData = $this->getSatellites();
-
-        $combineSatelliteData = function($satellite) {
-
-            DataResponse::validateId($satellite);
-            return DataResponse::fromJsonString($this->retrieveData($satellite->id));
-        };
-
-        return array_map($combineSatelliteData, DataResponse::fromJsonString($satelliteData));
+        $allSatData = $this->retrieveSatellitesData();
+        $allSatDataArr = DataResponse::fromJsonString($allSatData);
+        $satId = DataResponse::retrieveFirstSatelliteId($allSatDataArr);
+        return $this->retrieveSatelliteDataById($satId);
     }
 }

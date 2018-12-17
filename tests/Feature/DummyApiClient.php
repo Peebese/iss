@@ -20,13 +20,13 @@ class DummyApiClient extends Client
     {
         return new Response(
             200,
-            [],
+            ['Content-Type' => 'application/json'],
             '[
-                        {
-                            "name": "iss",
-                            "id": 25544
-                        }
-                    ]'
+                {
+                    "name": "iss",
+                    "id": 25544
+                }
+             ]'
         );
     }
 
@@ -34,22 +34,22 @@ class DummyApiClient extends Client
     {
         return new Response(
             200,
-                    [],
-            "{
-                    \"name\": \"iss\",
-                    \"id\": 25544,
-                    \"latitude\": 50.11496269845,
-                    \"longitude\": 118.07900427317,
-                    \"altitude\": 408.05526028199,
-                    \"velocity\": 27635.971970874,
-                    \"visibility\": \"daylight\",
-                    \"footprint\": 4446.1877699772,
-                    \"timestamp\": 1364069476,
-                    \"daynum\": 2456375.3411574,
-                    \"solar_lat\": 1.3327003598631,
-                    \"solar_lon\": 238.78610691196,
-                    \"units\": \"kilometers\"
-                    }"
+            ['Content-Type' => 'application/json'],
+            '{
+                "name": "iss",
+                "id": 25544,
+                "latitude": 50.11496269845,
+                "longitude": 118.07900427317,
+                "altitude": 408.05526028199,
+                "velocity": 27635.971970874,
+                "visibility": "daylight",
+                "footprint": 4446.1877699772,
+                "timestamp": 1364069476,
+                "daynum": 2456375.3411574,
+                "solar_lat": 1.3327003598631,
+                "solar_lon": 238.78610691196,
+                "units": "kilometers"
+             }'
         );
     }
 }

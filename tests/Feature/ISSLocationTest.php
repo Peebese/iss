@@ -4,13 +4,13 @@ namespace Tests\Feature;
 
 use App\Console\Commands\src\Application\ContainerBuilder;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class ISSLocationTest extends TestCase
 {
     private $dummyHttpClient;
     private $apiClientService;
+    private $dataResponseService;
 
     public function setUp()
     {
@@ -20,11 +20,7 @@ class ISSLocationTest extends TestCase
         $container->set('http-client', $this->dummyHttpClient);
 
         $this->apiClientService = $container->get('api-client-service');
-    }
-
-    public function testSalelliteIdValidation()
-    {
-
+        $this->dataResponseService = $container->get('data-response-service');
     }
 
     /**
@@ -34,10 +30,14 @@ class ISSLocationTest extends TestCase
      */
     public function testGetISSLatLan()
     {
-        $this->assertEquals(['application/json'],['application/json']);
-        $this->assertNotEquals(['application/json'],['application/test']);
-        $this->assertNotEmpty('50.000393993'); // lat
-        $this->assertNotEmpty('180.3003993993'); // long
+        $satellites = $this->dummyHttpClient->getSatellites();
+        $satData = $this->dummyHttpClient->getSatelliteData();
+        $satPosition = $this->dataResponseService->getSatellitePosition($satData->getBody());
+        $satPosObj = json_decode($satPosition);
+
+        $this->assertEquals(['application/json'],$satellites->getHeader('Content-Type'));
+        $this->assertNotEmpty($satPosition);
+        $this->assertEquals('118.07900427317', $satPosObj->longitude);
     }
 
     /**
@@ -47,10 +47,8 @@ class ISSLocationTest extends TestCase
      */
     public function testCalculateDistance()
     {
-        // to value is greater than distance
-        $this->assertTrue(100 > 50);
-        // calculateDistance(location1, location2)
-        $this->assertEquals(40, 40);
+        $distance = $this->dataResponseService->getDistFromFirstSat('28.978917744091', '128.71059302811');
+        $this->assertTrue($distance > 0);
     }
 
     /**

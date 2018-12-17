@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: PhilipB
- * Date: 2018-12-16
- * Time: 23:48
- */
 
 namespace App\Console\Commands\src\Response;
 
@@ -19,6 +13,6 @@ class InvalidMessageException extends \Exception
 
     public static function fromResponseBody(string $responseBody): InvalidMessageException
     {
-        return new static('Expected JSON with "id" field, but got: ' . var_export($responseBody, true));
+        return new static('Expected JSON with "id" and "name" fields, but got: ' . var_export($responseBody, true));
     }
 }

@@ -15,7 +15,10 @@ class Config
      */
     private $config;
 
-
+    /**
+     * @return array
+     * @throws \Exception
+     */
     private function getConfigData() : array
     {
         if(!$this->config){
@@ -35,5 +38,4 @@ class Config
     {
         return $this->getConfigData()['api_domain'];
     }
-
 }

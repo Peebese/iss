@@ -11,3 +11,7 @@ PHPUnit is required to run tests
 
 PHP-DI is used to manage Dependency Injection , can be found : app/Console/config/di.php The main API service is found:\
 app/Console/Commands/src/ApiClentS/ApiClientService.php
+
+Console command: `$ php artisan ISS:locate`
+
+You need to run `$ composer install` to install the application
